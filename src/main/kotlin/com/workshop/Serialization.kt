@@ -12,14 +12,14 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.configureSerialization(repository: TaskRepository, roomRepository: RoomRepository) {
+fun Application.configureSerialization(taskRepository: TaskRepository, roomRepository: RoomRepository) {
     install(ContentNegotiation) {
         json()
     }
     routing {
         route("/tasks") {
             get {
-                val tasks = repository.allTasks()
+                val tasks = taskRepository.allTasks()
                 call.respond(tasks)
             }
 
@@ -29,7 +29,7 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
                     call.respond(HttpStatusCode.BadRequest)
                     return@get
                 }
-                val task = repository.taskByName(name)
+                val task = taskRepository.taskByName(name)
                 if (task == null) {
                     call.respond(HttpStatusCode.NotFound)
                     return@get
@@ -45,7 +45,7 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
                 }
                 try {
                     val priority = Priority.valueOf(priorityAsText)
-                    val tasks = repository.tasksByPriority(priority)
+                    val tasks = taskRepository.tasksByPriority(priority)
 
 
                     if (tasks.isEmpty()) {
@@ -61,7 +61,7 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
             post {
                 try {
                     val task = call.receive<Task>()
-                    repository.addTask(task)
+                    taskRepository.addTask(task)
                     call.respond(HttpStatusCode.NoContent)
                 } catch (ex: IllegalStateException) {
                     call.respond(HttpStatusCode.BadRequest)
@@ -76,7 +76,7 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
                     call.respond(HttpStatusCode.BadRequest)
                     return@delete
                 }
-                if (repository.removeTask(name)) {
+                if (taskRepository.removeTask(name)) {
                     call.respond(HttpStatusCode.NoContent)
                 } else {
                     call.respond(HttpStatusCode.NotFound)
@@ -90,8 +90,10 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
                 try {
                     val roomName = call.parameters["room"]
                     val moderatorName = call.parameters["moderator"]
+                    val firstTask = taskRepository.tasksByPriority(Priority.Low).first()
                     val room = Room(name = roomName,
                         moderator = moderatorName,
+                        currentTask = firstTask,
                         players = listOf(Player(name = moderatorName, point = "?"))
                     )
                     roomRepository.addRoom(
@@ -105,10 +107,11 @@ fun Application.configureSerialization(repository: TaskRepository, roomRepositor
                 }
             }
         }
-        route("rooms") {
+        route("room") {
             get {
-                val rooms = roomRepository.getRooms()
-                call.respond(rooms)
+                val roomName = call.parameters["room"]!!
+                val room = roomRepository.getRoom(roomName)
+                call.respond(room ?: HttpStatusCode.BadRequest)
             }
         }
     }

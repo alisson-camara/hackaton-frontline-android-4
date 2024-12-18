@@ -4,6 +4,7 @@ interface RoomRepository {
     suspend fun addRoom(room: Room)
     suspend fun getRooms(): List<Room>
     suspend fun joinRoom(roomName: String, playerName: String): Room
+    suspend fun getRoom(name: String): Room?
 }
 
 class FakeRoomRepository : RoomRepository {
@@ -21,5 +22,10 @@ class FakeRoomRepository : RoomRepository {
         players?.add(newPlayer)
         rooms[actualRoom?.name!!] = actualRoom.copy(players = players)
         return rooms[actualRoom.name] as Room
+    }
+
+    override suspend fun getRoom(name: String): Room? {
+        val actualRoom = rooms[name]
+        return actualRoom
     }
 }
