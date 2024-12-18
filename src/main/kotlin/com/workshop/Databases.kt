@@ -1,70 +1,40 @@
 package com.workshop
 
-import com.workshop.db.TaskTable
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import com.workshop.db.entitites.PlayerTable
+import com.workshop.db.entitites.RoomTable
+import com.workshop.db.entitites.TaskTable
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
-import io.ktor.server.http.content.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.net.URI
-import java.sql.Connection
-import java.sql.DriverManager
 
-fun Application.configureDatabases() {
-    /*val dbUri: URI = URI(System.getenv("DATABASE_URL"))
-
-    val username: String = dbUri.userInfo.split(":").get(0)
-    val password: String = dbUri.userInfo.split(":").get(1)
-    val dbUrl = "jdbc:postgresql://" + dbUri.host + ':' + dbUri.port + dbUri.path + "?sslmode=require"
-
-    Database.connect(
-        url = dbUrl,
-        user = username,
-        password = password
-    )
-    transaction {
-        SchemaUtils.create(TaskTable)
-        SchemaUtils.create(TaskTable)
-    }*/
+fun Application.configureDatabase() {
+    DatabaseFactory.init()
 }
-/**
- * Makes a connection to a Postgres database.
- *
- * In order to connect to your running Postgres process,
- * please specify the following parameters in your configuration file:
- * - postgres.url -- Url of your running database process.
- * - postgres.user -- Username for database connection
- * - postgres.password -- Password for database connection
- *
- * If you don't have a database process running yet, you may need to [download]((https://www.postgresql.org/download/))
- * and install Postgres and follow the instructions [here](https://postgresapp.com/).
- * Then, you would be able to edit your url,  which is usually "jdbc:postgresql://host:port/database", as well as
- * user and password values.
- *
- *
- * @param embedded -- if [true] defaults to an embedded database for tests that runs locally in the same process.
- * In this case you don't have to provide any parameters in configuration file, and you don't have to run a process.
- *
- * @return [Connection] that represent connection to the database. Please, don't forget to close this connection when
- * your application shuts down by calling [Connection.close]
- * */
-fun Application.connectToPostgres(embedded: Boolean): Connection {
-    Class.forName("org.postgresql.Driver")
-    if (embedded) {
-        log.info("Using embedded H2 database for testing; replace this flag to use postgres")
-        return DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "")
-    } else {
-        val url = environment.config.property("postgres.url").getString()
-        log.info("Connecting to postgres database at $url")
-        val user = environment.config.property("postgres.user").getString()
-        val password = environment.config.property("postgres.password").getString()
 
-        return DriverManager.getConnection(url, user, password)
+object DatabaseFactory {
+    fun init() {
+        Database.connect(hikari())
+        createTables()
+    }
+
+    private fun hikari(): HikariDataSource {
+        val config = HikariConfig().apply {
+            jdbcUrl = "jdbc:postgresql://localhost:5432/bff-db"
+            driverClassName = "org.postgresql.Driver"
+            username = "postgres"
+            password = "host3636"
+            maximumPoolSize = 10
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+        }
+        return HikariDataSource(config)
+    }
+
+    private fun createTables() {
+        transaction {
+            SchemaUtils.create(RoomTable, TaskTable, PlayerTable)
+        }
     }
 }
