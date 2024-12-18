@@ -14,6 +14,6 @@ fun Application.module() {
     val taskRepository = FakeTaskRepository()
     val roomRepository = FakeRoomRepository()
     configureSerialization(taskRepository, roomRepository)
-    configureDatabase()
+    //configureDatabases()
     configureRouting()
 }
