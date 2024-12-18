@@ -107,9 +107,10 @@ fun Application.configureSerialization(taskRepository: TaskRepository, roomRepos
                 }
             }
         }
-        route("room") {
+
+        route("/room/{roomName}") {
             get {
-                val roomName = call.parameters["room"]!!
+                val roomName = call.parameters["roomName"]!!
                 val room = roomRepository.getRoom(roomName)
                 call.respond(room ?: HttpStatusCode.BadRequest)
             }
@@ -131,6 +132,18 @@ fun Application.configureSerialization(taskRepository: TaskRepository, roomRepos
                 } catch (ex: JsonConvertException) {
                     call.respond(HttpStatusCode.BadRequest)
                 }
+            }
+        }
+    }
+    routing {
+        route("/remove-player") {
+            delete {
+                val room = call.parameters["room"]!!
+                val player = call.parameters["player"]!!
+
+                val roomResult = roomRepository.removePlayer(room, player)
+
+                call.respond(roomResult)
             }
         }
     }
