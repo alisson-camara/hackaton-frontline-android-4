@@ -12,7 +12,8 @@ fun Application.module() {
     // testing commit
     //val repository = PostgresTaskRepository()
     val taskRepository = FakeTaskRepository()
-    configureSerialization(taskRepository)
+    val roomRepository = FakeRoomRepository()
+    configureSerialization(taskRepository, roomRepository)
     //configureDatabases()
     configureRouting()
 }

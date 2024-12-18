@@ -12,7 +12,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.configureSerialization(repository: TaskRepository) {
+fun Application.configureSerialization(repository: TaskRepository, roomRepository: RoomRepository) {
     install(ContentNegotiation) {
         json()
     }
@@ -80,6 +80,53 @@ fun Application.configureSerialization(repository: TaskRepository) {
                     call.respond(HttpStatusCode.NoContent)
                 } else {
                     call.respond(HttpStatusCode.NotFound)
+                }
+            }
+        }
+    }
+    routing {
+        route("/create-room") {
+            post {
+                try {
+                    val roomName = call.parameters["room"]
+                    val moderatorName = call.parameters["moderator"]
+                    val room = Room(name = roomName,
+                        moderator = moderatorName,
+                        players = listOf(Player(name = moderatorName, point = "?"))
+                    )
+                    roomRepository.addRoom(
+                        room
+                    )
+                    call.respond(room)
+                } catch (ex: IllegalStateException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                } catch (ex: JsonConvertException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
+        }
+        route("rooms") {
+            get {
+                val rooms = roomRepository.getRooms()
+                call.respond(rooms)
+            }
+        }
+    }
+    routing {
+        route("/join-room") {
+            post {
+                try {
+                    val roomName = call.parameters["room"]!!
+                    val playerName = call.parameters["player"]!!
+                    val result = roomRepository.joinRoom(
+                        roomName = roomName,
+                        playerName = playerName
+                    )
+                    call.respond(result)
+                } catch (ex: IllegalStateException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                } catch (ex: JsonConvertException) {
+                    call.respond(HttpStatusCode.BadRequest)
                 }
             }
         }
