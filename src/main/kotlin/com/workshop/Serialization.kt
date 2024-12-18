@@ -93,7 +93,7 @@ fun Application.configureSerialization(taskRepository: TaskRepository, roomRepos
                     val firstTask = taskRepository.tasksByPriority(Priority.Low).first()
                     val room = Room(name = roomName,
                         moderator = moderatorName,
-                        currentTask = firstTask,
+                        currentTask = firstTask.name,
                         players = listOf(Player(name = moderatorName, point = "?"))
                     )
                     roomRepository.addRoom(
