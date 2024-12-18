@@ -9,6 +9,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    // testing commit
     //val repository = PostgresTaskRepository()
     val taskRepository = FakeTaskRepository()
     configureSerialization(taskRepository)
