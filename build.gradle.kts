@@ -36,11 +36,6 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.ktor.client.content.negotiation)
-
-    implementation("org.jetbrains.exposed:exposed-core:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-dao:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.43.0")
-    implementation("com.zaxxer:HikariCP:5.0.1")
 }
 
 tasks {
