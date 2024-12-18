@@ -74,3 +74,4 @@ URL: {BASE_URL}/join-room?room=SalaDaPaula&player=Paula Method: POST Protocol: h
 ---------- Response ----------
 
 { "name": "SalaDaPaula", "currentTask": "Task 1", "moderator": "Paula", "players": [ { "name": "Paula", "point": "?" } ] }
+ 
